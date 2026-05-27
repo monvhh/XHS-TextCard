@@ -416,11 +416,48 @@ class CanvasRenderer {
                 this.drawStyledLines(ctx, layout.lines, textAreaRect.x + layout.prefixWidth, contentY, config, templateId, textAreaRect.width - layout.prefixWidth, layout.align);
             } else if (layout.type === 'image') {
                 this.drawInlineImage(ctx, layout, textAreaRect.x, contentY);
+            } else if (layout.type === 'math-block') {
+                this.drawMathBlock(ctx, layout, textAreaRect.x, contentY, textAreaRect.width);
+            } else if (layout.type === 'code-block') {
+                this.drawCodeBlock(ctx, layout, textAreaRect.x, contentY, config, templateId, textAreaRect.width);
             } else if (layout.lines) {
                 this.drawStyledLines(ctx, layout.lines, textAreaRect.x, contentY, config, templateId, textAreaRect.width, layout.align);
             }
             currentY += layout.height;
         }
+        ctx.restore();
+    }
+
+    drawMathBlock(ctx, layout, x, y, maxWidth) {
+        if (!layout.image) return;
+        const drawX = layout.align === 'center' ? x + (maxWidth - layout.width) / 2 : x;
+        ctx.drawImage(layout.image, drawX, y, layout.width, layout.contentHeight);
+    }
+
+    drawCodeBlock(ctx, layout, x, y, config, templateId, maxWidth) {
+        const paddingX = layout.paddingX || 12;
+        const paddingY = layout.paddingY || 10;
+        const contentHeight = layout.height - (layout.marginBottom || 0);
+        let bgColor = 'rgba(15, 23, 42, 0.06)';
+        let borderColor = 'rgba(15, 23, 42, 0.10)';
+        const template = TemplateDefinitions[templateId];
+        if (template && template.getTextStyles) {
+            const styles = template.getTextStyles({ isCode: true }, config);
+            if (styles && styles.codeBgColor) bgColor = styles.codeBgColor;
+        }
+
+        ctx.save();
+        CanvasUtils.drawRoundedRect(ctx, x, y, maxWidth, contentHeight, 8, bgColor, true, borderColor);
+        this.drawStyledLines(
+            ctx,
+            layout.lines,
+            x + paddingX,
+            y + paddingY,
+            config,
+            templateId,
+            maxWidth - (paddingX * 2),
+            layout.align
+        );
         ctx.restore();
     }
 
@@ -474,12 +511,16 @@ class CanvasRenderer {
             if (align === 'center' && drawWidth > 0 && Array.isArray(lineSegments)) {
                 let lineWidth = 0;
                 for (const segment of lineSegments) {
+                    if (segment.isMath) {
+                        lineWidth += segment.width || 0;
+                        continue;
+                    }
                     const fontStyle = segment.fontStyle || 'normal';
                     const fontWeight = segment.fontWeight || 'normal';
                     const fontSize = parseFloat(segment.fontSize) || parseFloat(config.fontSize) || 16;
-                    const fontFamily = config.fontFamily === 'inherit'
+                    const fontFamily = segment.fontFamily || (config.fontFamily === 'inherit'
                         ? "-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif"
-                        : (config.fontFamily || 'sans-serif');
+                        : (config.fontFamily || 'sans-serif'));
                     ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
                     lineWidth += CanvasUtils.measureTextWidth(ctx, segment.text || '', letterSpacing);
                 }
@@ -489,7 +530,11 @@ class CanvasRenderer {
             if (Array.isArray(lineSegments)) {
                 for (const segment of lineSegments) {
                     this.drawSegment(ctx, segment, segmentX, lineY, config, templateId);
-                    segmentX += CanvasUtils.measureTextWidth(ctx, segment.text, letterSpacing);
+                    if (segment.isMath) {
+                        segmentX += segment.width || 0;
+                    } else {
+                        segmentX += CanvasUtils.measureTextWidth(ctx, segment.text, letterSpacing);
+                    }
                 }
             } else {
                 this.drawSegment(ctx, lineSegments, segmentX, lineY, config, templateId);
@@ -499,13 +544,18 @@ class CanvasRenderer {
     }
 
     drawSegment(ctx, segment, x, y, config, templateId) {
+        if (segment.isMath && segment.image) {
+            ctx.drawImage(segment.image, x, y, segment.width, segment.height);
+            return;
+        }
+
         const fontStyle = segment.fontStyle || 'normal';
         const fontWeight = segment.fontWeight || 'normal';
         const fontSize = parseFloat(segment.fontSize) || parseFloat(config.fontSize) || 16;
-        const fontFamily = config.fontFamily === 'inherit' ? "-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif" : (config.fontFamily || "sans-serif");
+        const fontFamily = segment.fontFamily || (config.fontFamily === 'inherit' ? "-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif" : (config.fontFamily || "sans-serif"));
         ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
         
-        let textColor = config.textColor;
+        let textColor = segment.color || config.textColor;
         let highlightColor = 'rgba(255, 243, 191, 0.7)';
         let codeBgColor = 'rgba(0,0,0,0.04)';
 
@@ -513,7 +563,7 @@ class CanvasRenderer {
         if (template && template.getTextStyles) {
             const styles = template.getTextStyles(segment, config);
             if (styles) {
-                if (styles.textColor) textColor = styles.textColor;
+                if (styles.textColor && !segment.color) textColor = styles.textColor;
                 if (styles.highlightColor) highlightColor = styles.highlightColor;
                 if (styles.codeBgColor) codeBgColor = styles.codeBgColor;
             }
@@ -526,7 +576,7 @@ class CanvasRenderer {
         if (segment.isHighlight) {
             ctx.fillStyle = highlightColor;
             ctx.fillRect(x, y + fontSize * 0.1, width, fontSize * 1.1);
-        } else if (segment.isCode) {
+        } else if (segment.isCode && !segment.isCodeBlock) {
             ctx.fillStyle = codeBgColor;
             CanvasUtils.drawRoundedRect(ctx, x - 2, y + 1, width + 4, fontSize * 1.3, 4, ctx.fillStyle);
         }

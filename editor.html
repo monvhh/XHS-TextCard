@@ -45,6 +45,18 @@
     
     <script src="js/lib/jszip.min.js"></script>
     <script src="js/lib/marked.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/lib/common.min.js"></script>
+    <script>
+        window.MathJax = {
+            startup: { typeset: false },
+            svg: { fontCache: 'none' },
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
     <!-- Pickr -->
     <link rel="stylesheet" href="css/lib/monolith.min.css"/>
     <script src="js/lib/pickr.min.js"></script>
@@ -101,6 +113,8 @@
                                 <li><span>*文本*</span> <span>斜体</span></li>
                                 <li><span>~~文本~~</span> <span>删除线</span></li>
                                 <li><span>==文本==</span> <span>高亮</span></li>
+                                <li><span>$公式$</span> <span>行内公式</span></li>
+                                <li><span>$$公式$$</span> <span>块级公式</span></li>
                                 <li><span>::: center ... :::</span> <span>居中块</span></li>
                                 <li><span>> 文本</span> <span>引用</span></li>
                                 <li><span>`文本`</span> <span>行内代码</span></li>
