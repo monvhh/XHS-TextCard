@@ -58,7 +58,61 @@ class MarkdownParser {
             }
         };
 
-        marked.use({ extensions: [highlightExtension, centerBlockExtension] });
+        const mathBlockExtension = {
+            name: 'mathBlock',
+            level: 'block',
+            start(src) {
+                const dollarMatch = src.match(/^[ \t]*\$\$/m);
+                const bracketMatch = src.match(/^[ \t]*\\\[/m);
+                if (!dollarMatch) return bracketMatch ? bracketMatch.index : undefined;
+                if (!bracketMatch) return dollarMatch.index;
+                return Math.min(dollarMatch.index, bracketMatch.index);
+            },
+            tokenizer(src) {
+                const dollarRule = /^[ \t]*\$\$[ \t]*\n?([\s\S]+?)\n?[ \t]*\$\$[ \t]*(?:\n|$)/;
+                const bracketRule = /^[ \t]*\\\[[ \t]*\n?([\s\S]+?)\n?[ \t]*\\\][ \t]*(?:\n|$)/;
+                const match = dollarRule.exec(src) || bracketRule.exec(src);
+                if (!match) return;
+                return {
+                    type: 'mathBlock',
+                    raw: match[0],
+                    text: match[1].trim(),
+                    display: true
+                };
+            },
+            renderer(token) {
+                return `<div class="math-block">${token.text}</div>`;
+            }
+        };
+
+        const inlineMathExtension = {
+            name: 'inlineMath',
+            level: 'inline',
+            start(src) {
+                const dollarIndex = src.indexOf('$');
+                const parenIndex = src.indexOf('\\(');
+                if (dollarIndex === -1) return parenIndex === -1 ? undefined : parenIndex;
+                if (parenIndex === -1) return dollarIndex;
+                return Math.min(dollarIndex, parenIndex);
+            },
+            tokenizer(src) {
+                const dollarRule = /^\$((?:\\.|[^$\n])+?)\$(?!\$)/;
+                const parenRule = /^\\\(((?:\\.|[\s\S])+?)\\\)/;
+                const match = dollarRule.exec(src) || parenRule.exec(src);
+                if (!match) return;
+                return {
+                    type: 'inlineMath',
+                    raw: match[0],
+                    text: match[1].trim(),
+                    display: false
+                };
+            },
+            renderer(token) {
+                return `<span class="math-inline">${token.text}</span>`;
+            }
+        };
+
+        marked.use({ extensions: [mathBlockExtension, inlineMathExtension, highlightExtension, centerBlockExtension] });
         marked.setOptions({ breaks: true, gfm: true });
         this.isInitialized = true;
     }
