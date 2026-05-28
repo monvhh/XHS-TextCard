@@ -14,7 +14,7 @@
 
 **实时视觉反馈** - 编辑文字或调整样式时，预览区会实时呈现最终生成的图片效果，所见即所得。
 
-**Markdown 深度支持** - 支持 # 标题、**加粗**、==高亮==、引用、列表等多种语法，让文字更具层次。
+**Markdown 深度支持** - 支持 # 标题、**加粗**、==高亮==、引用、列表、LaTeX 公式、代码高亮等多种语法，让文字更具层次。
 
 ## 📏 完美的排版与分页控制
 
@@ -78,6 +78,31 @@
 1. 有序列表
 
 --- 分割线 (强制开启新页面)
+
+### 公式演示
+
+行内公式：质能方程 $E = mc^2$，欧拉公式 $e^{i\pi} + 1 = 0$
+
+块级公式：
+
+$$
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+$$
+
+$$
+\sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}
+$$
+
+### 代码演示
+
+```python
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+print(fibonacci(10))  # 55
+```
 
 ### 图片演示
 ![小红书风格示例](https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=500)
