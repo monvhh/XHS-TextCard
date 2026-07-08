@@ -32,6 +32,8 @@
 
 如果你只需要本地 Markdown 转图片，直接使用本仓库即可；如果你希望把无格式原文自动整理成小红书风格标题、分段、重点和 emoji，可使用 **[XHS-TextCard 官方在线版](https://xhs-textcard.site/)**。
 
+📱 **体验新版图文工具**：[图卡狐 tukahu.cn](https://tukahu.cn)
+
 ---
 
 ## 📸 效果预览
@@ -251,7 +253,7 @@ templates/
 
 **让更多人看到这款小红书文字卡片生成器**
 
-[![Star History Chart](https://api.star-history.com/svg?repos=geekfoxcharlie/XHS-TextCard&type=Date)](https://star-history.com/#geekfoxcharlie/XHS-TextCard&Date)
+[![Star History Chart](https://api.star-history.com/chart?repos=geekfoxcharlie/XHS-TextCard&type=date&legend=top-left&sealed_token=eutxHe6zGJEDAWAN8aXzduic1bbUZC1RZJOuia6bAFCAf3Vc_VSJ0rB_99im3bJaYvuG5KzCUjrSlIYIpMbW-skdKzbVjLCN-82DMQD_DZVMRXRQ5snmvHJ-PofXEed27kVe1gi4umIntQzLXVaf6SDVKgzi1tvPODw0W9ktW3OCN6LiRhfnrbBlul3F)](https://www.star-history.com/?repos=geekfoxcharlie%2FXHS-TextCard&type=date&legend=top-left)
 
 ---
 
